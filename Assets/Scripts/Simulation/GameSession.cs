@@ -15,6 +15,7 @@ namespace CyberUnderground.Simulation
         public HeatSystem Heat { get; private set; }
         public HardwareSystem Hardware { get; private set; }
         public SkillSystem Skills { get; private set; }
+        public ProgressSystem Progress { get; private set; }
         public MissionSystem Missions { get; private set; }
         public OsintSystem Osint { get; private set; }
         public NewsSystem News { get; private set; }
@@ -40,6 +41,7 @@ namespace CyberUnderground.Simulation
             Heat = new HeatSystem();
             Hardware = new HardwareSystem();
             Skills = new SkillSystem();
+            Progress = new ProgressSystem();
             Missions = new MissionSystem(world);
             Osint = new OsintSystem(world);
             News = new NewsSystem(world);
@@ -53,6 +55,17 @@ namespace CyberUnderground.Simulation
             var game = new GameSession(WorldCatalog.Create());
             game.PushNotice("The desktop guide is open. Your money is in the bank site, not on the screen.");
             return game;
+        }
+
+        public CommandResult UnlockAbility(string id)
+        {
+            string text = Progress.TryUnlock(id, Skills);
+            Touch();
+            if (Progress.Has(id) && text.IndexOf("already") < 0)
+                return CommandResult.Success(text);
+            if (Progress.Has(id))
+                return CommandResult.Fail(text);
+            return CommandResult.Fail(text);
         }
 
         public string ExportSave()
@@ -75,6 +88,7 @@ namespace CyberUnderground.Simulation
                 fresh.Reputation.Get(RepKind.Corporate),
                 fresh.Reputation.Get(RepKind.Intelligence));
             Skills.Restore(fresh.Skills.ExportXp());
+            Progress.Restore(fresh.Progress.CyberXp, fresh.Progress.SkillPoints, fresh.Progress.TechPoints, fresh.Progress.Knowledge, fresh.Progress.UnlockedIds());
             Hardware.Restore(fresh.Hardware.RamGb, fresh.Hardware.CpuTier, fresh.Hardware.StorageGb, fresh.Hardware.NetTier, fresh.Hardware.MaxWindows, fresh.Hardware.OwnedIds());
             Missions.Restore(fresh.Missions.CompletedIds());
             Osint.Restore(fresh.Osint.KnownIds(), fresh.Osint.LinkKeys());
@@ -284,7 +298,7 @@ namespace CyberUnderground.Simulation
                 if (!HasFlag("scanned:lumen"))
                     return CommandResult.Fail("You still need to scan lumen.");
                 CompleteCampus();
-                return CommandResult.Success("Survey filed. Lumen IT pays €40. OSINT is no longer only a word in a lecture.");
+                return CommandResult.Success("Survey filed. Lumen IT pays €40.\n" + Progress.Grant(40, 1, 0) + "\nOSINT is no longer only a word in a lecture.");
             }
 
             if (mission.Id == "novamart_footprint")
@@ -292,7 +306,7 @@ namespace CyberUnderground.Simulation
                 if (!Osint.RequiredFootprintComplete())
                     return CommandResult.Fail("The map is incomplete. " + Osint.RequiredFootprintDone() + "/" + Osint.RequiredFootprintCount() + " required links.");
                 CompleteFootprint();
-                return CommandResult.Success("Map filed with Northline. €80 for public facts. The staging page is still up if you want to answer it yourself.");
+                return CommandResult.Success("Map filed with Northline. €80 for public facts.\n" + Progress.Grant(80, 1, 1) + "\nThe staging page is still up if you want to answer it yourself.");
             }
 
             return CommandResult.Fail("That job cannot be filed from here.");
@@ -342,7 +356,7 @@ namespace CyberUnderground.Simulation
             News.Publish("news_quiz", "Northline keeps hiring student graders.", "Helio's training inbox is busy. The firm is small and picky.");
             PushNotice("Northline paid €120. You spotted the lookalike message.");
             Touch();
-            return CommandResult.Success(quiz.Success + " Paid €120.");
+            return CommandResult.Success(quiz.Success + " Paid €120.\n" + Progress.Grant(120, 1, 1));
         }
 
         public CommandResult TryUpgrade(string upgradeId)
@@ -467,7 +481,7 @@ namespace CyberUnderground.Simulation
             Reputation.Add(RepKind.Corporate, 3);
             Reputation.Add(RepKind.Hacker, 1);
             Skills.Add(SkillBranch.Osint, 24);
-            PushNotice("€40 from Lumen IT. Connect is now something you can try.");
+            PushNotice("€40, Cyber XP, and a skill point. Open Progress.");
             Touch();
         }
 
@@ -494,7 +508,7 @@ namespace CyberUnderground.Simulation
                 News.Publish("news_report", "NovaMart closes a public staging link after a student note.", "The retailer thanked an unnamed student and took the page down.");
                 PushNotice("NovaMart paid €70 for the responsible note.");
                 Touch();
-                return CommandResult.Success("You sent the map to NovaMart's public contact. They pay €70 and take the staging link down. The payment lands in your Helio account.");
+                return CommandResult.Success("You sent the map to NovaMart's public contact. They pay €70 and take the staging link down.\n" + Progress.Grant(70, 0, 1));
             }
             if (optionId == "sell")
             {
@@ -507,7 +521,7 @@ namespace CyberUnderground.Simulation
                 News.Publish("news_sell", "A NovaMart staging rumor is moving through Grayhaven chats.", "Nobody signs the posts. The retailer has not confirmed anything.");
                 PushNotice("A broker paid €180. Campus IT may notice the noise.");
                 Touch();
-                return CommandResult.Success("You hand the public staging notes to a Nightwire broker. They pay €180 into your Helio account. They do not say what they will do with the file. People may start asking questions.");
+                return CommandResult.Success("You hand the public staging notes to a Nightwire broker. They pay €180 into your Helio account.\n" + Progress.Grant(60, 0, 0) + "\nThey do not say what they will do with the file.");
             }
             if (optionId == "hold")
             {

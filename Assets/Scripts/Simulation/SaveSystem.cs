@@ -21,6 +21,8 @@ namespace CyberUnderground.Simulation
             Line(sb, "rep", game.Reputation.Get(RepKind.Hacker) + "," + game.Reputation.Get(RepKind.Underground) + "," + game.Reputation.Get(RepKind.Corporate) + "," + game.Reputation.Get(RepKind.Intelligence));
             var xp = game.Skills.ExportXp();
             Line(sb, "xp", JoinInts(xp));
+            Line(sb, "prog", game.Progress.CyberXp + "," + game.Progress.SkillPoints + "," + game.Progress.TechPoints + "," + game.Progress.Knowledge);
+            Line(sb, "abilities", Join(game.Progress.UnlockedIds()));
             Line(sb, "hw", game.Hardware.RamGb + "," + game.Hardware.CpuTier + "," + game.Hardware.StorageGb + "," + game.Hardware.NetTier + "," + game.Hardware.MaxWindows);
             Line(sb, "upgrades", Join(game.Hardware.OwnedIds()));
             Line(sb, "done", Join(game.Missions.CompletedIds()));
@@ -59,7 +61,12 @@ namespace CyberUnderground.Simulation
             int underground = 0;
             int corporate = 0;
             int intelligence = 0;
-            int[] xp = new int[8];
+            int[] xp = new int[9];
+            int cyber = 0;
+            int skillPoints = 0;
+            int techPoints = 0;
+            int knowledge = 0;
+            List<string> abilities = new List<string>();
             int ram = 4;
             int cpu = 0;
             int storage = 128;
@@ -117,7 +124,19 @@ namespace CyberUnderground.Simulation
                         intelligence = Int(parts[3]);
                     }
                 }
-                else if (key == "xp") xp = Ints(value, 8);
+                else if (key == "xp") xp = Ints(value, 9);
+                else if (key == "prog")
+                {
+                    var parts = value.Split(',');
+                    if (parts.Length >= 4)
+                    {
+                        cyber = Int(parts[0]);
+                        skillPoints = Int(parts[1]);
+                        techPoints = Int(parts[2]);
+                        knowledge = Int(parts[3]);
+                    }
+                }
+                else if (key == "abilities") abilities = Split(value);
                 else if (key == "hw")
                 {
                     var parts = value.Split(',');
@@ -162,6 +181,7 @@ namespace CyberUnderground.Simulation
             game.Heat.Restore(heat);
             game.Reputation.Restore(hacker, underground, corporate, intelligence);
             game.Skills.Restore(xp);
+            game.Progress.Restore(cyber, skillPoints, techPoints, knowledge, abilities);
             game.Hardware.Restore(ram, cpu, storage, net, windows, upgrades);
             game.Missions.Restore(done);
             game.Osint.Restore(nodes, links);

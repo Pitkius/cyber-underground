@@ -13,7 +13,7 @@ namespace CyberUnderground.Simulation
         readonly int[] _xp;
         static readonly string[] BranchLabels =
         {
-            "OSINT", "NETWORK", "SECURITY", "SOCIAL", "CRYPTO", "OPSEC", "PROGRAMMING", "INTELLIGENCE"
+            "OSINT", "NETWORK", "SECURITY", "SOCIAL", "CRYPTO", "OPSEC", "PROGRAMMING", "INTELLIGENCE", "DEFENSE"
         };
 
         static readonly string[] OsintNames = { "Untrained", "Basic Search", "Identity Research", "Corporate Research", "Relationship Mapping", "Advanced Intelligence" };
@@ -24,10 +24,11 @@ namespace CyberUnderground.Simulation
         static readonly string[] OpsecNames = { "Untrained", "Footprint Awareness", "Account Separation", "Heat Control", "Cover Discipline", "Organization Security" };
         static readonly string[] ProgrammingNames = { "Untrained", "Script Reading", "Data Handling", "Tool Building", "Automation", "Platform Engineering" };
         static readonly string[] IntelligenceNames = { "Untrained", "Source Doubt", "Claim Checking", "Collection Planning", "Network Judgment", "Strategic Intelligence" };
+        static readonly string[] DefenseNames = { "Untrained", "Log Reading", "Monitoring", "Detection", "Incident Response", "Counter Operations" };
 
         public SkillSystem()
         {
-            _xp = new int[8];
+            _xp = new int[9];
             _xp[(int)SkillBranch.Osint] = Level1Xp;
         }
 
@@ -117,6 +118,7 @@ namespace CyberUnderground.Simulation
                 case SkillBranch.Crypto: return CryptoNames;
                 case SkillBranch.Opsec: return OpsecNames;
                 case SkillBranch.Programming: return ProgrammingNames;
+                case SkillBranch.Defense: return DefenseNames;
                 default: return IntelligenceNames;
             }
         }

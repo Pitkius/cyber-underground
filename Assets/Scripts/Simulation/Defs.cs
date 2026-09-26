@@ -19,7 +19,8 @@ namespace CyberUnderground.Simulation
         Crypto = 4,
         Opsec = 5,
         Programming = 6,
-        Intelligence = 7
+        Intelligence = 7,
+        Defense = 8
     }
 
     public enum MissionKind

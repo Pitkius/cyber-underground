@@ -231,7 +231,12 @@ namespace CyberUnderground.Presentation
                     TextLink(content, page.Links[i].Label, page.Links[i].Url);
             }
             if (_url == "www.novamart.com/dev-notes")
+            {
+                Paragraph(content, _game.Progress.Knowledge >= 2
+                    ? "Hint: the careers page and the mailbox name the same intern. The human layer matters more than the module name. This does not finish the map."
+                    : "Target security: unknown. Knowledge 2 adds a hint on this page. It will not solve the job.");
                 RenderNoteChoice(content);
+            }
             if (_url == "nightwire.social")
                 RenderRumorChoice(content);
         }

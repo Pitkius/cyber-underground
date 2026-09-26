@@ -28,6 +28,7 @@ namespace CyberUnderground.Presentation
         MissionsApp _missions;
         SystemApp _system;
         GuideApp _guide;
+        ProgressApp _progress;
 
         public GameSession Session
         {
@@ -45,6 +46,7 @@ namespace CyberUnderground.Presentation
             _missions = new MissionsApp();
             _system = new SystemApp();
             _guide = new GuideApp();
+            _progress = new ProgressApp();
             _guide.Changed = MarkDirty;
             BuildDesktop();
             RefreshHud();
@@ -155,6 +157,7 @@ namespace CyberUnderground.Presentation
             AddIcon(icons, "terminal", "Terminal", OpenTerminal);
             AddIcon(icons, "notes", "Notes", OpenOsint);
             AddIcon(icons, "work", "Work", OpenJobs);
+            AddIcon(icons, "progress", "Progress", OpenProgress);
             AddIcon(icons, "pc", "This PC", OpenProfile);
             AddIcon(icons, "settings", "Settings", OpenSystem);
 
@@ -162,7 +165,7 @@ namespace CyberUnderground.Presentation
             note.anchorMin = new Vector2(1, 1);
             note.anchorMax = new Vector2(1, 1);
             note.pivot = new Vector2(1, 1);
-            note.sizeDelta = new Vector2(300, 150);
+            note.sizeDelta = new Vector2(320, 210);
             note.anchoredPosition = new Vector2(-28, -28);
             _note = UIManager.Label(note, "", 14, UIManager.Text, TextAnchor.UpperLeft);
             UIManager.Stretch(_note.rectTransform, 14, 12, 14, 12);
@@ -270,6 +273,14 @@ namespace CyberUnderground.Presentation
             });
         }
 
+        void OpenProgress()
+        {
+            Open("progress", "Progress", new Vector2(560, 560), delegate (RectTransform content)
+            {
+                _progress.Mount(content, _session, this);
+            });
+        }
+
         void OpenJobs()
         {
             Open("jobs", "Work", new Vector2(560, 540), delegate (RectTransform content)
@@ -316,13 +327,14 @@ namespace CyberUnderground.Presentation
             if (_windows.Find("profile") != null) _profile.Refresh();
             if (_windows.Find("osint") != null) _osint.Refresh();
             if (_windows.Find("jobs") != null) _missions.Refresh();
+            if (_windows.Find("progress") != null) _progress.Refresh();
             if (_windows.Find("system") != null) _system.Refresh();
             if (_windows.Find("browser") != null) _browser.Refresh();
         }
 
         void RefreshHud()
         {
-            _note.text = "STICKY\n\nTuition is still due.\nThe number is in Helio, not here.\n\nOpen Guide if you get lost.";
+            _note.text = _session.Progress.NextGoals(_session.Skills, _session.Player.MoneyEuros);
         }
 
         void DrainNotices()
